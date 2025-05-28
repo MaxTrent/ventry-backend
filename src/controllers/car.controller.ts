@@ -33,7 +33,7 @@ export const getCarsHandler = async (req: Request, res: Response, next: NextFunc
       total,
     });
   } catch (error) {
-    logger.error({ error }, 'Error fetching cars');
+    logger.error({ error }, 'Error getting cars');
     next(error);
   }
 };

@@ -1,18 +1,23 @@
-export interface IManager {
+export interface ICustomer {
     _id: string;
     email: string;
     password: string;
     firstName: string;
     lastName: string;
-    role: 'superadmin' | 'manager';
+    role: 'customer';
+    isVerified: boolean;
     createdAt: Date;
     updatedAt: Date;
   }
   
-  export interface CreateManagerInput {
+  export interface SignupCustomerInput {
     email: string;
     password: string;
     firstName: string;
     lastName: string;
-    role: 'manager';
+  }
+  
+  export interface OtpInput {
+    email: string;
+    otp: string;
   }
