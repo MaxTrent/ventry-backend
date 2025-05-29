@@ -20,7 +20,7 @@ customerSchema.pre('save', async function (next) {
     this.password = await bcrypt.hash(this.password, 10);
     logger.debug({ email: this.email }, 'Password hashed for customer');
   }
-  this.updatedAt = Date.now();
+  this.updatedAt = new Date();
   next();
 });
 

@@ -8,7 +8,7 @@ const carSchema = new Schema({
   model: { type: String, required: true, trim: true },
   price: { type: Number, required: true, min: 0 },
   isAvailable: { type: Boolean, default: true },
-  category: { type: String, required: true }, // UUID string
+  category: { type: String, required: true }, 
   year: { type: Number, required: true, min: 1900 },
   mileage: { type: Number, default: 0, min: 0 },
   fuelType: { type: String, enum: ['Petrol', 'Diesel', 'Electric', 'Hybrid'], required: true },
@@ -20,7 +20,7 @@ const carSchema = new Schema({
 
 carSchema.pre('save', function (next) {
   logger.debug({ id: this._id }, 'Saving car document');
-  this.updatedAt = Date.now();
+  this.updatedAt = new Date();
   next();
 });
 

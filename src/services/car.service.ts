@@ -1,4 +1,5 @@
 import { Car } from '../models/car.model';
+import { Category } from '../models/category.model';
 import { ICar, CarQuery, CreateCarInput } from '../types/car.types';
 import logger from '../utils/logger';
 import { z } from 'zod';
@@ -61,6 +62,13 @@ export const getCars = async (query: CarQuery): Promise<{ cars: ICar[]; total: n
 };
 
 export const createCar = async (data: CreateCarInput): Promise<ICar> => {
+  logger.debug({ data }, 'Processing car creation');
+  const category = await Category.findById(data.category).lean();
+  if (!category) {
+    logger.warn({ categoryId: data.category }, 'Category not found');
+    throw new Error('Category not found');
+  }
+
   const car = await Car.create({ ...data, isAvailable: data.isAvailable ?? true });
   logger.info({ carId: car._id, brand: car.brand, model: car.model }, 'Car created');
   return car;
