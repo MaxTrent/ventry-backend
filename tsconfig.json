@@ -14,10 +14,10 @@
     "esModuleInterop": true,
     "strict": true
   },
-  "ts-node": {
-    "esm": true,
-    "experimentalSpecifierResolution": "node"
-  },
+  // "ts-node": {
+  //   "esm": true,
+  //   "experimentalSpecifierResolution": "node"
+  // },
   "include": ["src/**/*", "src/app.ts"],
   "exclude": ["node_modules"]
 }

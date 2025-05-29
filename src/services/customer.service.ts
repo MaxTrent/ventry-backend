@@ -61,6 +61,6 @@ export const verifyOtp = async (data: OtpInput): Promise<string> => {
   await Otp.deleteOne({ _id: otpRecord._id });
 
   const token = generateToken({ id: customer._id, role: customer.role });
-  logger.info({ email: validatedData.email }, 'OTP verified, JWT issued');
+  logger.info({ email: validatedData.email }, 'OTP verified');
   return token;
 };

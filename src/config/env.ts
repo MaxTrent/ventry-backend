@@ -18,13 +18,17 @@ const envSchema = z.object({
 export default (function () {
   try {
     const parsed = envSchema.parse(process.env);
-    logger.info('Environment variables validated successfully');
+    console.log('Environment variables validated successfully');
+    // logger.info('Environment variables validated successfully');
     return parsed;
   } catch (error) {
     if (error instanceof z.ZodError) {
-      logger.error({ errors: error.errors }, 'Environment validation failed');
+      console.error('Environment validation failed:', error.errors);
+      // logger.error({ errors: error.errors }, 'Environment validation failed');
+
     } else {
-      logger.error({ error }, 'Unexpected error during environment validation');
+      console.error('Unexpected error during environment validation:', error);
+      // logger.error({ error }, 'Unexpected error during environment validation');
     }
     if (process.env.NODE_ENV !== 'test') {
       process.exit(1);

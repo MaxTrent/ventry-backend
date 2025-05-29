@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import logger from '../utils/logger';
 
 const otpSchema = new Schema({
   _id: { type: String, default: uuidv4 },
@@ -11,7 +10,7 @@ const otpSchema = new Schema({
 });
 
 otpSchema.pre('save', function (next) {
-  logger.debug({ email: this.email }, 'Saving OTP document');
+  // logger.debug({ email: this.email }, 'Saving OTP document');
   next();
 });
 

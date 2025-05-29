@@ -1,6 +1,5 @@
 import { Schema, model } from 'mongoose';
 import { v4 as uuidv4 } from 'uuid';
-import logger from '../utils/logger';
 
 const categorySchema = new Schema({
   _id: { type: String, default: uuidv4 },
@@ -11,7 +10,7 @@ const categorySchema = new Schema({
 });
 
 categorySchema.pre('save', function (next) {
-  logger.debug({ id: this._id }, 'Saving category document');
+  // logger.debug({ id: this._id }, 'Saving category document');
   this.updatedAt = new Date();
   next();
 });

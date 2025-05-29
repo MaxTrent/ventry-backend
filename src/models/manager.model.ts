@@ -1,7 +1,6 @@
 import { Schema, model } from 'mongoose';
 import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
-import logger from '../utils/logger';
 
 const managerSchema = new Schema({
   _id: { type: String, default: uuidv4 },
@@ -17,7 +16,7 @@ const managerSchema = new Schema({
 managerSchema.pre('save', async function (next) {
   if (this.isModified('password')) {
     this.password = await bcrypt.hash(this.password, 10);
-    logger.debug({ email: this.email }, 'Password hashed for manager');
+    // logger.debug({ email: this.email }, 'Password hashed for manager');
   }
   this.updatedAt = new Date();
   next();

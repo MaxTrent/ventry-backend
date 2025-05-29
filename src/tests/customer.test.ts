@@ -2,7 +2,7 @@ import { signupCustomer, verifyOtp } from '../services/customer.service';
 import { Customer } from '../models/customer.model';
 import { Otp } from '../models/otp.model';
 import { sendOtpEmail } from '../utils/email';
-import { ICustomer, SignupCustomerInput,  } from '../types/customer.types';
+import { ICustomer, SignupCustomerInput } from '../types/customer.types';
 import logger from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
@@ -22,10 +22,11 @@ describe('Customer Service', () => {
       password: 'password123',
       firstName: 'John',
       lastName: 'Doe',
+      isVerified: false,
     } as SignupCustomerInput;
 
     (Customer.findOne as jest.Mock).mockResolvedValue(null);
-    (Customer.create as jest.Mock).mockResolvedValue(mockInput);
+    (Customer.create as jest.Mock).mockResolvedValue({ ...mockInput, role: 'customer' });
     (Otp.create as jest.Mock).mockResolvedValue({ email: mockInput.email, otp: '123456', expiresAt: new Date() });
     (sendOtpEmail as jest.Mock).mockResolvedValue(undefined);
 
@@ -66,7 +67,7 @@ describe('Customer Service', () => {
       { isVerified: true },
       { new: true },
     );
-    expect(result).toHaveProperty('token');
+    expect(typeof result).toBe('string');
     logger.info({ result }, 'verifyOtp unit test passed');
   });
 });
