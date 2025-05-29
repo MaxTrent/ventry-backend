@@ -13,17 +13,17 @@ describe('Category Service', () => {
   });
 
   it('should create a category', async () => {
-    const mockInput: CreateCategoryInput = {
+    const mockInput = {
       name: 'SUV',
       description: 'Sport Utility Vehicles',
-    };
+    } as CreateCategoryInput;
 
-    const mockCategory: ICategory = {
+    const mockCategory = {
       _id: uuidv4(),
       ...mockInput,
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    } as ICategory;
 
     (Category.findOne as jest.Mock).mockResolvedValue(null);
     (Category.create as jest.Mock).mockResolvedValue(mockCategory);
@@ -37,7 +37,7 @@ describe('Category Service', () => {
   });
 
   it('should fetch categories with pagination', async () => {
-    const mockCategories: ICategory[] = [
+    const mockCategories = [
       {
         _id: uuidv4(),
         name: 'SUV',
@@ -45,7 +45,7 @@ describe('Category Service', () => {
         createdAt: new Date(),
         updatedAt: new Date(),
       },
-    ];
+    ] as ICategory[];
 
     const mockQuery = { page: 1, limit: 10 };
 
@@ -71,13 +71,13 @@ describe('Category Service', () => {
 
   it('should fetch a category by ID', async () => {
     const mockId = uuidv4();
-    const mockCategory: ICategory = {
+    const mockCategory = {
       _id: mockId,
       name: 'SUV',
       description: 'Sport Utility Vehicles',
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    } as ICategory;
 
     (Category.findById as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue(mockCategory),
@@ -93,13 +93,13 @@ describe('Category Service', () => {
   it('should update a category', async () => {
     const mockId = uuidv4();
     const mockInput = { name: 'Updated SUV' };
-    const mockCategory: ICategory = {
+    const mockCategory = {
       _id: mockId,
       name: 'Updated SUV',
       description: 'Sport Utility Vehicles',
       createdAt: new Date(),
       updatedAt: new Date(),
-    };
+    } as ICategory;
 
     (Category.findOne as jest.Mock).mockResolvedValue(null);
     (Category.findByIdAndUpdate as jest.Mock).mockReturnValue({
