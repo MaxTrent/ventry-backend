@@ -16,3 +16,8 @@ export interface IManager {
     lastName: string;
     role: 'manager';
   }
+
+  export interface ManagerQuery {
+    page: number;
+    limit: number;
+  }

@@ -1,4 +1,4 @@
-import { getCars, createCar, updateCar } from '../services/car.service';
+import { getCars, createCar, updateCar, deleteCar } from '../services/car.service';
 import { Car } from '../models/car.model';
 import { Category } from '../models/category.model';
 import { ICar, CarQuery, CreateCarInput } from '../types/car.types';
@@ -125,4 +125,17 @@ describe('Car Service', () => {
     expect(result).toEqual(car);
     logger.info({ result }, 'updateCar unit test passed');
   });
+
+  it('should delete a car', async () => {
+    const carId = uuidv4();
+    const car = { _id: carId, brand: 'Toyota', model: 'Camry' };
+
+    (Car.findByIdAndDelete as jest.Mock).mockResolvedValue(car);
+
+    await deleteCar(carId);
+
+    expect(Car.findByIdAndDelete).toHaveBeenCalledWith(carId);
+    logger.info('deleteCar unit test passed');
+  });
 });
+

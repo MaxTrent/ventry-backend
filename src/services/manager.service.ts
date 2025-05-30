@@ -1,5 +1,5 @@
 import { Manager } from '../models/manager.model';
-import { CreateManagerInput, IManager } from '../types/manager.types';
+import { CreateManagerInput, IManager, ManagerQuery } from '../types/manager.types';
 import logger from '../utils/logger';
 import { z } from 'zod';
 
