@@ -4,7 +4,16 @@ import { CreateManagerInput, IManager } from '../types/manager.types';
 import logger from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 
-jest.mock('../models/manager.model');
+jest.mock('../models/manager.model', () => ({
+  Manager: {
+    findOne: jest.fn(),
+    create: jest.fn(),
+    find: jest.fn(),
+    countDocuments: jest.fn(),
+    findByIdAndUpdate: jest.fn(),
+    findByIdAndDelete: jest.fn(),
+  },
+}));
 
 describe('Manager Service', () => {
   beforeEach(() => {
@@ -39,7 +48,6 @@ describe('Manager Service', () => {
     logger.info({ result }, 'createManager unit test passed');
   });
 
-
   it('should get managers with pagination', async () => {
     const query = { page: 1, limit: 10 };
     const managers = [
@@ -48,9 +56,11 @@ describe('Manager Service', () => {
     ];
     const total = 2;
 
+  
     (Manager.find as jest.Mock).mockReturnValue({
       skip: jest.fn().mockReturnThis(),
-      limit: jest.fn().mockResolvedValue(managers),
+      limit: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockResolvedValue(managers),
     });
     (Manager.countDocuments as jest.Mock).mockResolvedValue(total);
 
@@ -61,7 +71,6 @@ describe('Manager Service', () => {
     expect(result).toEqual({ managers, total });
     logger.info({ result }, 'getManagers unit test passed');
   });
-
 
   it('should update a manager', async () => {
     const managerId = uuidv4();
@@ -74,7 +83,10 @@ describe('Manager Service', () => {
     };
 
     (Manager.findOne as jest.Mock).mockResolvedValue(null);
-    (Manager.findByIdAndUpdate as jest.Mock).mockResolvedValue(manager);
+    
+    (Manager.findByIdAndUpdate as jest.Mock).mockReturnValue({
+      lean: jest.fn().mockResolvedValue(manager),
+    });
 
     const result = await updateManager(managerId, updatedData);
 
@@ -82,7 +94,6 @@ describe('Manager Service', () => {
     expect(result).toEqual(manager);
     logger.info({ result }, 'updateManager unit test passed');
   });
-
 
   it('should delete a manager', async () => {
     const managerId = uuidv4();

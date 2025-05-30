@@ -10,6 +10,8 @@ jest.mock('../models/car.model', () => ({
     find: jest.fn(),
     countDocuments: jest.fn(),
     create: jest.fn(),
+    findByIdAndUpdate: jest.fn(), 
+    findByIdAndDelete: jest.fn(),
   },
 }));
 jest.mock('../models/category.model', () => ({
@@ -68,7 +70,7 @@ describe('Car Service', () => {
       brand: 'Toyota',
       model: 'Camry',
       price: 25000,
-      isAvailable: true, // Explicitly set to ensure boolean
+      isAvailable: true, 
       category: uuidv4(),
       year: 2022,
       mileage: 0,
@@ -80,8 +82,8 @@ describe('Car Service', () => {
     const car: ICar = {
       _id: uuidv4(),
       ...input,
-      isAvailable: input.isAvailable ?? true, // Default to true if undefined
-      mileage: input.mileage ?? 0, // Default to 0 if undefined
+      isAvailable: input.isAvailable ?? true, 
+      mileage: input.mileage ?? 0, 
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -117,7 +119,9 @@ describe('Car Service', () => {
     (Category.findById as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue(category),
     });
-    (Car.findByIdAndUpdate as jest.Mock).mockResolvedValue(car);
+    (Car.findByIdAndUpdate as jest.Mock).mockReturnValue({
+      lean: jest.fn().mockResolvedValue(car),
+    });
 
     const result = await updateCar(carId, updatedData);
 
@@ -138,4 +142,3 @@ describe('Car Service', () => {
     logger.info('deleteCar unit test passed');
   });
 });
-
