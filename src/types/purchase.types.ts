@@ -1,4 +1,6 @@
-export interface IPurchase {
+import { Document } from "mongoose";
+
+export interface IPurchase extends Document {
     _id: string;
     customerId: string;
     carId: string;

@@ -18,7 +18,6 @@
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongodb": "^6.16.0",
     "mongoose": "^8.15.1",
     "paystack-sdk": "^2.5.19",
     "pino": "^9.7.0",

@@ -7,7 +7,8 @@ import { z } from 'zod';
 import {Paystack} from 'paystack-sdk';
 import { v4 as uuidv4 } from 'uuid';
 import config from '../config/env';
-import { GetTransactionResponse  } from 'paystack-sdk/dist/transaction/interface';
+import { GetTransactionResponse } from 'paystack-sdk/dist/transaction/interface';
+import { sendPurchaseConfirmationEmail } from '../utils/email';
 import { BadRequest } from 'paystack-sdk/dist/interface';
 
 const paystack = new Paystack(config.PAYSTACK_SECRET_KEY);
@@ -42,13 +43,13 @@ export const initiatePurchase = async (
   }
 
   const reference = `ventry_${uuidv4()}`;
-  const amountInKobo = car.price * 100; // Paystack uses kobo
-  
+  const amountInKobo = Math.round(car.price * 100); // Convert to kobo, ensure integer
+  const amountInKoboString = amountInKobo.toString(); // Convert to string for Paystack
 
   try {
     const payment = await paystack.transaction.initialize({
       email: validatedData.email,
-      amount: amountInKobo.toString(),
+      amount: amountInKoboString,
       reference,
       callback_url: `${config.APP_URL}/api/purchases/callback`,
     });
@@ -91,6 +92,21 @@ export const handlePaymentCallback = async (reference: string): Promise<IPurchas
       purchase.paymentStatus = 'completed';
       await Car.findByIdAndUpdate(purchase.carId, { isAvailable: false });
       await purchase.save();
+
+      // Fetch car and customer for email
+      const car = await Car.findById(purchase.carId).lean();
+      const customer = await Customer.findById(purchase.customerId).lean();
+      if (car && customer) {
+        await sendPurchaseConfirmationEmail(
+          customer.email,
+          car.brand,
+          car.model,
+          purchase.amount
+        );
+      } else {
+        logger.warn({ purchaseId: purchase._id }, 'Car or customer not found for email');
+      }
+
       logger.info({ purchaseId: purchase._id }, 'Purchase completed');
       return purchase;
     } else {
