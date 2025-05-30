@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getCars, createCar } from '../services/car.service';
+import { getCars, createCar, updateCar, deleteCar } from '../services/car.service';
 import { sendResponse } from '../utils/response';
 import { CarQuery, CreateCarInput } from '../types/car.types';
 import logger from '../utils/logger';
@@ -46,6 +46,31 @@ export const createCarHandler = async (req: Request, res: Response, next: NextFu
     sendResponse(res, 201, car);
   } catch (error) {
     logger.error({ error }, 'Error creating car');
+    next(error);
+  }
+};
+
+export const updateCarHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const data = createCarSchema.partial().parse(req.body) as Partial<CreateCarInput>;
+    logger.debug({ id, data }, 'Received PUT /cars/:id request');
+    const car = await updateCar(id, data);
+    sendResponse(res, 200, car);
+  } catch (error) {
+    logger.error({ error }, 'Error updating car');
+    next(error);
+  }
+};
+
+export const deleteCarHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    logger.debug({ id }, 'Received DELETE /cars/:id request');
+    await deleteCar(id);
+    sendResponse(res, 204, null);
+  } catch (error) {
+    logger.error({ error }, 'Error deleting car');
     next(error);
   }
 };

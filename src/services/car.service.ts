@@ -73,3 +73,34 @@ export const createCar = async (data: CreateCarInput): Promise<ICar> => {
   logger.info({ carId: car._id, brand: car.brand, model: car.model }, 'Car created');
   return car;
 };
+
+
+export const updateCar = async (id: string, data: Partial<CreateCarInput>): Promise<ICar> => {
+  logger.debug({ id, data }, 'Processing car update');
+  if (data.category) {
+    const category = await Category.findById(data.category).lean();
+    if (!category) {
+      logger.warn({ categoryId: data.category }, 'Category not found');
+      throw new Error('Category not found');
+    }
+  }
+
+  const car = await Car.findByIdAndUpdate(id, data, { new: true }).lean();
+  if (!car) {
+    logger.warn({ carId: id }, 'Car not found');
+    throw new Error('Car not found');
+  }
+
+  logger.info({ carId: car._id, brand: car.brand, model: car.model }, 'Car updated');
+  return car;
+};
+
+export const deleteCar = async (id: string): Promise<void> => {
+  logger.debug({ id }, 'Processing car deletion');
+  const car = await Car.findByIdAndDelete(id);
+  if (!car) {
+    logger.warn({ carId: id }, 'Car not found');
+    throw new Error('Car not found');
+  }
+  logger.info({ carId: id }, 'Car deleted');
+};

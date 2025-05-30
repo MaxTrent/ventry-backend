@@ -1,4 +1,4 @@
-import { getCars, createCar } from '../services/car.service';
+import { getCars, createCar, updateCar } from '../services/car.service';
 import { Car } from '../models/car.model';
 import { Category } from '../models/category.model';
 import { ICar, CarQuery, CreateCarInput } from '../types/car.types';
@@ -97,5 +97,32 @@ describe('Car Service', () => {
     expect(Car.create).toHaveBeenCalledWith(input);
     expect(createResult).toEqual(car);
     logger.info({ result: createResult }, 'createCar unit test passed');
+  });
+
+  it('should update a car', async () => {
+    const carId = uuidv4();
+    const categoryId = uuidv4();
+    const updatedData = { price: 26000, isAvailable: false };
+    const category = { _id: categoryId, name: 'SUV' };
+    const car = {
+      _id: carId,
+      brand: 'Toyota',
+      model: 'Camry',
+      price: 26000,
+      isAvailable: false,
+      category: categoryId,
+      year: 2022,
+    };
+
+    (Category.findById as jest.Mock).mockReturnValue({
+      lean: jest.fn().mockResolvedValue(category),
+    });
+    (Car.findByIdAndUpdate as jest.Mock).mockResolvedValue(car);
+
+    const result = await updateCar(carId, updatedData);
+
+    expect(Car.findByIdAndUpdate).toHaveBeenCalledWith(carId, updatedData, { new: true });
+    expect(result).toEqual(car);
+    logger.info({ result }, 'updateCar unit test passed');
   });
 });
