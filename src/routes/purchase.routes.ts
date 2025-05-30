@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { initiatePurchase, handlePaymentCallback } from '../services/purchase.service';
+import { initiatePurchase, handlePaymentCallback, handleWebhook } from '../services/purchase.service';
 import { authMiddleware } from '../middleware/auth.middleware';
 import logger from '../utils/logger';
 import { sendResponse } from '../utils/response';
@@ -35,6 +35,18 @@ router.get('/callback', async (req, res) => {
   } catch (error: any) {
     logger.error({ error: error.message }, 'Verification failed');
     sendResponse(res, 500, null, error.message || 'Verification failed');
+  }
+});
+
+// Handle Paystack webhook
+router.post('/webhook', async (req, res) => {
+  try {
+    const signature = req.headers['x-paystack-signature'] as string;
+    await handleWebhook(req.body, signature);
+    res.status(200).send('Webhook processed');
+  } catch (error: any) {
+    logger.error({ error: error.message }, 'Webhook processing failed');
+    res.status(400).send('Webhook processing failed');
   }
 });
 

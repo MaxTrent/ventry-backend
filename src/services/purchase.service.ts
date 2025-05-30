@@ -10,6 +10,7 @@ import config from '../config/env';
 import { GetTransactionResponse } from 'paystack-sdk/dist/transaction/interface';
 import { sendPurchaseConfirmationEmail } from '../utils/email';
 import { BadRequest } from 'paystack-sdk/dist/interface';
+import crypto from "crypto";
 
 const paystack = new Paystack(config.PAYSTACK_SECRET_KEY);
 
@@ -43,13 +44,12 @@ export const initiatePurchase = async (
   }
 
   const reference = `ventry_${uuidv4()}`;
-  const amountInKobo = Math.round(car.price * 100); // Convert to kobo, ensure integer
-  const amountInKoboString = amountInKobo.toString(); // Convert to string for Paystack
+  const amountInKobo = Math.round(car.price * 100); //Paystack uses kobo
 
   try {
     const payment = await paystack.transaction.initialize({
       email: validatedData.email,
-      amount: amountInKoboString,
+      amount: amountInKobo.toString(),
       reference,
       callback_url: `${config.APP_URL}/api/purchases/callback`,
     });
@@ -97,12 +97,19 @@ export const handlePaymentCallback = async (reference: string): Promise<IPurchas
       const car = await Car.findById(purchase.carId).lean();
       const customer = await Customer.findById(purchase.customerId).lean();
       if (car && customer) {
-        await sendPurchaseConfirmationEmail(
-          customer.email,
-          car.brand,
-          car.model,
-          purchase.amount
-        );
+        try {
+          await sendPurchaseConfirmationEmail(
+            customer.email,
+            car.brand,
+            car.model,
+            purchase.amount
+          );
+        } catch (emailError: any) {
+          logger.error(
+            { error: emailError.message, purchaseId: purchase._id },
+            'Failed to send purchase confirmation email'
+          );
+        }
       } else {
         logger.warn({ purchaseId: purchase._id }, 'Car or customer not found for email');
       }
@@ -120,3 +127,58 @@ export const handlePaymentCallback = async (reference: string): Promise<IPurchas
     throw new Error(`Verification failed: ${error.message}`);
   }
 };
+export const handleWebhook = async (event: any, signature: string): Promise<void> => {
+    // Verify Paystack signature
+    const hash = crypto
+      .createHmac('sha512', config.PAYSTACK_SECRET_KEY)
+      .update(JSON.stringify(event))
+      .digest('hex');
+    if (hash !== signature) {
+      logger.warn({ event }, 'Invalid webhook signature');
+      throw new Error('Invalid webhook signature');
+    }
+  
+    if (event.event === 'charge.success') {
+      const reference = event.data.reference;
+      const purchase = await Purchase.findOne({ paymentReference: reference });
+      if (!purchase) {
+        logger.warn({ reference }, 'Purchase not found in webhook');
+        throw new Error('Purchase not found');
+      }
+  
+      if (purchase.paymentStatus !== 'completed') {
+        purchase.paymentStatus = 'completed';
+        await Car.findByIdAndUpdate(purchase.carId, { isAvailable: false });
+        await purchase.save();
+  
+        // Send confirmation email
+        const car = await Car.findById(purchase.carId).lean();
+        const customer = await Customer.findById(purchase.customerId).lean();
+        if (car && customer) {
+          try {
+            await sendPurchaseConfirmationEmail(
+              customer.email,
+              car.brand,
+              car.model,
+              purchase.amount
+            );
+          } catch (emailError: any) {
+            logger.error(
+              { error: emailError.message, purchaseId: purchase._id },
+              'Failed to send purchase confirmation email in webhook'
+            );
+          }
+        }
+  
+        logger.info({ purchaseId: purchase._id }, 'Purchase completed via webhook');
+      }
+    } else if (event.event === 'charge.failed') {
+      const reference = event.data.reference;
+      const purchase = await Purchase.findOne({ paymentReference: reference });
+      if (purchase) {
+        purchase.paymentStatus = 'failed';
+        await purchase.save();
+        logger.info({ purchaseId: purchase._id }, 'Purchase failed via webhook');
+      }
+    }
+  };

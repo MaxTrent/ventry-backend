@@ -6,6 +6,7 @@ import { IPurchase } from '../types/purchase.types';
 import logger from '../utils/logger';
 import { v4 as uuidv4 } from 'uuid';
 import {Paystack} from 'paystack-sdk';
+import { sendPurchaseConfirmationEmail } from '../utils/email';
 
 jest.mock('../models/car.model', () => ({
   Car: {
@@ -24,12 +25,31 @@ jest.mock('../models/purchase.model', () => ({
     findOne: jest.fn(),
   },
 }));
-jest.mock('paystack-sdk');
+jest.mock('paystack-sdk', () => {
+  return jest.fn().mockImplementation(() => ({
+    transaction: {
+      initialize: jest.fn(),
+      verify: jest.fn(),
+    },
+  }));
+});
+jest.mock('../utils/email', () => ({
+  sendPurchaseConfirmationEmail: jest.fn(),
+}));
 
 describe('Purchase Service', () => {
+  let mockPaystackInstance: { transaction: { initialize: jest.Mock; verify: jest.Mock } };
+
   beforeEach(() => {
     jest.clearAllMocks();
     logger.info('Cleared mocks for test');
+    mockPaystackInstance = {
+      transaction: {
+        initialize: jest.fn(),
+        verify: jest.fn(),
+      },
+    };
+    (Paystack as jest.Mock).mockImplementation(() => mockPaystackInstance);
   });
 
   it('should initiate a car purchase', async () => {
@@ -71,7 +91,7 @@ describe('Purchase Service', () => {
       paymentReference: reference,
       createdAt: new Date(),
       updatedAt: new Date(),
-    } as IPurchase;
+    } as any;
 
     (Car.findById as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue(car),
@@ -79,14 +99,9 @@ describe('Purchase Service', () => {
     (Customer.findById as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue(customer),
     });
-    const mockPaystackInstance = {
-      transaction: {
-        initialize: jest.fn().mockResolvedValue({
-          data: { authorization_url: 'https://paystack.com/pay/test' },
-        }),
-      },
-    };
-    (Paystack as jest.Mock).mockImplementation(() => mockPaystackInstance);
+    mockPaystackInstance.transaction.initialize.mockResolvedValue({
+      data: { authorization_url: 'https://paystack.com/pay/test' },
+    });
     (Purchase.create as jest.Mock).mockResolvedValue(purchase);
 
     const result = await initiatePurchase({ carId, email }, customerId);
@@ -112,7 +127,7 @@ describe('Purchase Service', () => {
     logger.info({ result }, 'initiatePurchase unit test passed');
   });
 
-  it('should verify a purchase', async () => {
+  it('should verify a purchase and send confirmation email', async () => {
     const reference = `ventry_${uuidv4()}`;
     const carId = uuidv4();
     const customerId = uuidv4();
@@ -136,6 +151,8 @@ describe('Purchase Service', () => {
       email: 'test@example.com',
       firstName: 'Test',
       lastName: 'User',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
     const purchase: IPurchase = {
       _id: reference,
@@ -156,15 +173,11 @@ describe('Purchase Service', () => {
     (Customer.findById as jest.Mock).mockReturnValue({
       lean: jest.fn().mockResolvedValue(customer),
     });
-    const mockPaystackInstance = {
-      transaction: {
-        verify: jest.fn().mockResolvedValue({
-          data: { status: 'success', amount: 25000 * 100 },
-        }),
-      },
-    };
-    (Paystack as jest.Mock).mockImplementation(() => mockPaystackInstance);
+    mockPaystackInstance.transaction.verify.mockResolvedValue({
+      data: { status: 'success', amount: 25000 * 100 },
+    });
     (Car.findByIdAndUpdate as jest.Mock).mockResolvedValue(true);
+    (sendPurchaseConfirmationEmail as jest.Mock).mockResolvedValue(undefined);
 
     const result = await handlePaymentCallback(reference);
 
@@ -172,6 +185,12 @@ describe('Purchase Service', () => {
     expect(Paystack).toHaveBeenCalledWith(expect.any(String));
     expect(mockPaystackInstance.transaction.verify).toHaveBeenCalledWith(reference);
     expect(Car.findByIdAndUpdate).toHaveBeenCalledWith(carId, { isAvailable: false });
+    expect(sendPurchaseConfirmationEmail).toHaveBeenCalledWith(
+      customer.email,
+      car.brand,
+      car.model,
+      purchase.amount
+    );
     expect(purchase.paymentStatus).toBe('completed');
     expect(purchase.save).toHaveBeenCalled();
     expect(result).toBe(purchase);
@@ -202,6 +221,8 @@ describe('Purchase Service', () => {
       email,
       firstName: 'Test',
       lastName: 'User',
+      createdAt: new Date(),
+      updatedAt: new Date(),
     };
 
     (Car.findById as jest.Mock).mockReturnValue({
