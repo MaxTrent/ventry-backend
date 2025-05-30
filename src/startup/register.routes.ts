@@ -5,7 +5,7 @@ import customerRoutes from '../routes/customer.routes';
 import authRoutes from '../routes/auth.routes';
 import categoryRoutes from '../routes/category.routes';
 import logger from '../utils/logger';
-import purchaseRoutes from 'routes/purchase.routes';
+import purchaseRoutes from '../routes/purchase.routes';
 
 export default function registerRoutes(app: Express): void {
   app.use('/api/cars', carRoutes);

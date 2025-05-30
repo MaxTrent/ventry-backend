@@ -1,0 +1,465 @@
+{
+    "info": {
+      "name": "Ventry Backend API",
+      "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    },
+    "item": [
+      {
+        "name": "Auth",
+        "item": [
+          {
+            "name": "Login",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\": \"user@example.com\", \"password\": \"password123\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "login"]
+              },
+              "description": "Log in and receive a JWT token."
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Cars",
+        "item": [
+          {
+            "name": "Get Cars",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/cars?brand=Toyota&model=Camry&minPrice=10000&maxPrice=30000&isAvailable=true&category={{category_id}}&minYear=2020&maxYear=2023&fuelType=Petrol&transmission=Automatic&color=Blue&search=Camry&page=1&limit=10&sort=price:asc",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "cars"],
+                "query": [
+                  { "key": "brand", "value": "Toyota" },
+                  { "key": "model", "value": "Camry" },
+                  { "key": "minPrice", "value": "10000" },
+                  { "key": "maxPrice", "value": "30000" },
+                  { "key": "isAvailable", "value": "true" },
+                  { "key": "category", "value": "{{category_id}}" },
+                  { "key": "minYear", "value": "2020" },
+                  { "key": "maxYear", "value": "2023" },
+                  { "key": "fuelType", "value": "Petrol" },
+                  { "key": "transmission", "value": "Automatic" },
+                  { "key": "color", "value": "Blue" },
+                  { "key": "search", "value": "Camry" },
+                  { "key": "page", "value": "1" },
+                  { "key": "limit", "value": "10" },
+                  { "key": "sort", "value": "price:asc" }
+                ]
+              },
+              "description": "Query cars with pagination and filters."
+            },
+            "response": []
+          },
+          {
+            "name": "Create Car",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"brand\": \"Toyota\", \"model\": \"Camry\", \"price\": 25000, \"category\": \"{{category_id}}\", \"year\": 2022, \"mileage\": 0, \"fuelType\": \"Petrol\", \"transmission\": \"Automatic\", \"color\": \"Blue\", \"isAvailable\": true}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/cars",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "cars"]
+              },
+              "description": "Create a new car (superadmin or manager)."
+            },
+            "response": []
+          },
+          {
+            "name": "Update Car",
+            "request": {
+              "method": "PUT",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"price\": 26000, \"isAvailable\": false}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/cars/:id",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "cars", ":id"],
+                "variable": [
+                  { "key": "id", "value": "{{car_id}}" }
+                ]
+              },
+              "description": "Update a car (superadmin or manager)."
+            },
+            "response": []
+          },
+          {
+            "name": "Delete Car",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/cars/:id",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "cars", ":id"],
+                "variable": [
+                  { "key": "id", "value": "{{car_id}}" }
+                ]
+              },
+              "description": "Delete a car (superadmin or manager)."
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Categories",
+        "item": [
+          {
+            "name": "Create Category",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"name\": \"SUV\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/categories",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "categories"]
+              },
+              "description": "Create a new category (superadmin or manager)."
+            },
+            "response": []
+          },
+          {
+            "name": "Get Categories",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/categories?page=1&limit=10",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "categories"],
+                "query": [
+                  { "key": "page", "value": "1" },
+                  { "key": "limit", "value": "10" }
+                ]
+              },
+              "description": "Query categories with pagination."
+            },
+            "response": []
+          },
+          {
+            "name": "Get Category by ID",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/categories/:id",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "categories", ":id"],
+                "variable": [
+                  { "key": "id", "value": "{{category_id}}" }
+                ]
+              },
+              "description": "Get a category by ID."
+            },
+            "response": []
+          },
+          {
+            "name": "Update Category",
+            "request": {
+              "method": "PUT",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"name\": \"Sedan\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/categories/:id",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "categories", ":id"],
+                "variable": [
+                  { "key": "id", "value": "{{category_id}}" }
+                ]
+              },
+              "description": "Update a category (superadmin or manager)."
+            },
+            "response": []
+          },
+          {
+            "name": "Delete Category",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/categories/:id",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "categories", ":id"],
+                "variable": [
+                  { "key": "id", "value": "{{category_id}}" }
+                ]
+              },
+              "description": "Delete a category (superadmin or manager)."
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Customers",
+        "item": [
+          {
+            "name": "Signup",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\": \"test@example.com\", \"password\": \"password123\", \"firstName\": \"Test\", \"lastName\": \"User\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/customers/signup",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "customers", "signup"]
+              },
+              "description": "Register a customer and receive an OTP."
+            },
+            "response": []
+          },
+          {
+            "name": "Verify OTP",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\": \"test@example.com\", \"otp\": \"123456\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/customers/verify-otp",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "customers", "verify-otp"]
+              },
+              "description": "Verify OTP and receive a JWT token."
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Managers",
+        "item": [
+          {
+            "name": "Get Managers",
+            "request": {
+              "method": "GET",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/managers?page=1&limit=10",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "managers"],
+                "query": [
+                  { "key": "page", "value": "1" },
+                  { "key": "limit", "value": "10" }
+                ]
+              },
+              "description": "Query managers with pagination (superadmin only)."
+            },
+            "response": []
+          },
+          {
+            "name": "Create Manager",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\": \"manager@example.com\", \"password\": \"password123\", \"firstName\": \"Manager\", \"lastName\": \"User\", \"role\": \"manager\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/managers",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "managers"]
+              },
+              "description": "Create a new manager (superadmin only)."
+            },
+            "response": []
+          },
+          {
+            "name": "Update Manager",
+            "request": {
+              "method": "PUT",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"firstName\": \"Updated\", \"lastName\": \"User\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/managers/:id",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "managers", ":id"],
+                "variable": [
+                  { "key": "id", "value": "{{manager_id}}" }
+                ]
+              },
+              "description": "Update a manager (superadmin only)."
+            },
+            "response": []
+          },
+          {
+            "name": "Delete Manager",
+            "request": {
+              "method": "DELETE",
+              "header": [
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "url": {
+                "raw": "{{baseUrl}}/api/managers/:id",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "managers", ":id"],
+                "variable": [
+                  { "key": "id", "value": "{{manager_id}}" }
+                ]
+              },
+              "description": "Delete a manager (superadmin only)."
+            },
+            "response": []
+          }
+        ]
+      },
+      {
+        "name": "Purchases",
+        "item": [
+          {
+            "name": "Initiate Purchase",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"carId\": \"{{car_id}}\", \"email\": \"test@example.com\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/purchases",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "purchases"]
+              },
+              "description": "Initiate a car purchase (customer only)."
+            },
+            "response": []
+          },
+          {
+            "name": "Verify Purchase Callback",
+            "request": {
+              "method": "GET",
+              "header": [],
+              "url": {
+                "raw": "{{baseUrl}}/api/purchases/callback?reference={{reference}}",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "purchases", "callback"],
+                "query": [
+                  { "key": "reference", "value": "{{reference}}" }
+                ]
+              },
+              "description": "Verify payment via Paystack callback."
+            },
+            "response": []
+          },
+          {
+            "name": "Paystack Webhook",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "x-paystack-signature", "value": "{{paystack_signature}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"event\": \"charge.success\", \"data\": {\"reference\": \"{{reference}}\", \"amount\": 2500000, \"status\": \"success\"}}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/purchases/webhook",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "purchases", "webhook"]
+              },
+              "description": "Handle Paystack webhook events."
+            },
+            "response": []
+          }
+        ]
+      }
+    ],
+    "variable": [
+      {
+        "key": "baseUrl",
+        "value": "http://localhost:8080"
+      },
+      {
+        "key": "jwt_token",
+        "value": ""
+      },
+      {
+        "key": "reference",
+        "value": ""
+      },
+      {
+        "key": "category_id",
+        "value": ""
+      },
+      {
+        "key": "car_id",
+        "value": ""
+      },
+      {
+        "key": "manager_id",
+        "value": ""
+      },
+      {
+        "key": "paystack_signature",
+        "value": ""
+      }
+    ]
+  }
