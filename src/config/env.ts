@@ -7,12 +7,15 @@ dotenv.config();
 const envSchema = z.object({
   PORT: z.coerce.number().default(3000),
   MONGODB_URI: z.string().url('Invalid MongoDB URI'),
-  JWT_SECRET: z.string().min(1, 'JWT_SECRET is required'),
+  JWT_SECRET: z.string().min(1, 'Jwt secret is required'),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  SENDGRID_API_KEY: z.string().min(1, 'SENDGRID_API_KEY is required'),
+  SENDGRID_API_KEY: z.string().min(1, 'Sendgrid Api Key is required'),
   SENDGRID_FROM_EMAIL: z.string().email('Invalid email address'),
   SUPERADMIN_EMAIL: z.string().email('Invalid Superadmin email'),
-  SUPERADMIN_PASSWORD: z.string().min(1, 'SUPERADMIN_PASSWORD is required'),
+  SUPERADMIN_PASSWORD: z.string().min(1, 'Superadmin Password is required'),
+  PAYSTACK_SECRET_KEY: z.string().min(1, 'Paystack Secret Key is required'),
+  APP_URL: z.string().url('Invalid App URL'),
+
 });
 
 export default (function () {
