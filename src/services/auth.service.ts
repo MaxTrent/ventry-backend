@@ -6,7 +6,7 @@ import logger from '../utils/logger';
 import { z } from 'zod';
 import jwt from 'jsonwebtoken';
 import config from '../config/env';
-import { TokenBlacklist } from 'models/tokenblacklist.model';
+import { TokenBlacklist } from '../models/tokenblacklist.model';
 
 const loginSchema = z.object({
   email: z.string().email('Invalid email'),

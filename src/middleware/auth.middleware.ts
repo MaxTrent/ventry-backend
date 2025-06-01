@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyToken } from '../utils/jwt';
 import { sendResponse } from '../utils/response';
 import logger from '../utils/logger';
-import { TokenBlacklist } from 'models/tokenblacklist.model';
+import { TokenBlacklist } from '../models/tokenblacklist.model';
 
 export interface AuthRequest extends Request {
   user?: { id: string; role: string };
