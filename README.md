@@ -3,7 +3,7 @@
 A Node.js/Express TypeScript application for a car dealership, managing cars, categories, customers, managers, and purchases.
 
 ## Features
-- **Customer Signup**
+- **Customer Signup & OTP Verification(Check Spam for otp)**
 - **Car Management**
 - **Category Management**
 - **Manager Management**
@@ -22,16 +22,13 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
    npm install
    ```
 3. **Configure Environment**:
-   Create `.env`using `.env.sample` as reference
-  
+   Create `.env`using `.env.sample` as template
+   
+
 4. **Seed Superadmin User**:
-   Run the seeding script to create a superadmin user:
    ```bash
    npm run seed
    ```
-   
-   - Creates a superadmin user
- 
 5. **Run Application**:
    ```bash
    npm start
@@ -73,31 +70,29 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
 
 ## Testing
 - **Unit Tests**: Located in `src/tests/*.test.ts`. Uses Jest and MongoDB Memory Server.
-- **Postman**: Import `postman_collection.json` for all APIs.
-  - Set `baseUrl` to `http://localhost:<PORT>}`.
-  - Set `superadmin_password` to the `.env` `SUPERADMIN_PASSWORD`.
-- **Webhook Testing**: Use `ngrok http <PORT>` for `http://localhost:<PORT>/api/purchases/webhook`.
-
-## Webhooks
-- **Purpose**: Handle Paystack events (`charge.success`, `charge.failed`).
-- **Setup**:
-  1. Install ngrok:
+- **Postman**: Import `postman_collection.json`.
+  - Set `baseUrl`
+  - Set `superadmin_password` to `.env` `SUPERADMIN_PASSWORD`.
+  - Update `jwt_token`, `category_id`, `car_id`, `manager_id`, `reference`, `paystack_signature`.
+- **Webhook Testing**:
+  1. **Install ngrok**:
+     ```bash
+     brew install ngrok
+     ngrok authtoken <your_auth_token> 
+     ```
+  2. **Start ngrok**:
      ```bash
      ngrok http <PORT>
      ```
-  2. Copy the ngrok URL.
-  3. Set webhook URL in Paystack Dashboard
-  4. Enable `charge.success` and `charge.failed` events.
-  5. Test via Paystack’s webhook simulator or Postman:
-     - Use `POST /api/purchases/webhook` in `ventry_backend.postman_collection.json`.
-     - Compute `x-paystack-signature` with `PAYSTACK_SECRET_KEY` and payload:
-       ```javascript
-       const crypto = require('crypto');
-       const secret = process.env.PAYSTACK_SECRET_KEY;
-       const hash = crypto.createHmac('sha512', secret).update(JSON.stringify(payload)).digest('hex');
-       ```
-- **Test Case**: In `src/tests/purchase.test.ts` for `charge.success`.
+     - Copy URL (e.g., `https://abcd1234.ngrok.io`).
+     - Open `http://127.0.0.1:4040`.
+  3. **Configure Paystack**:
+     - Dashboard > Settings > API Keys & Webhooks.
+     - Set Webhook URL
+  4. **Test Webhook**:
+     - **Purchase Simulation**:
+       - Use Postman to initiate a purchase and complete test payment.
 
 ## Email Notifications
-- **Purchase Confirmation**: Sent via SendGrid after payment verification.
+- **Purchase Confirmation**: Sent after payment verification.
 - **OTP Emails**: Sent during customer signup.
