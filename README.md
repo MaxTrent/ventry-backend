@@ -3,8 +3,8 @@
 A Node.js/Express TypeScript application for a car dealership, managing cars, categories, customers, managers, and purchases.
 
 ## Features
-- **Customer Signup & OTP Verification**
-- **Car Management** 
+- **Customer Signup**
+- **Car Management**
 - **Category Management**
 - **Manager Management**
 - **Purchase Processing**
@@ -22,22 +22,16 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
    npm install
    ```
 3. **Configure Environment**:
-   Create a `.env` file using `.env.sample` as a template:
-
+   Create `.env`using `.env.sample` as reference
+  
 4. **Seed Superadmin User**:
-   Run the seeding script to create a superadmin user for administrative tasks:
+   Run the seeding script to create a superadmin user:
    ```bash
-   npx ts-node src/scripts/seed-superadmin.ts
+   npm run seed
    ```
-   - Ensure MongoDB is running (`MONGODB_URI`).
-   - The script creates a superadmin user (e.g., email: `superadmin@example.com`, password: `password123`).
-   - Verify in MongoDB:
-     ```bash
-     mongo
-     use ventry
-     db.managers.find({ role: 'superadmin' })
-     ```
-   - Use these credentials to log in via `POST /api/auth/login` and obtain a JWT for superadmin endpoints.
+   
+   - Creates a superadmin user
+ 
 5. **Run Application**:
    ```bash
    npm start
@@ -52,6 +46,7 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
 |--------|----------|-------------|----------------|
 | **Auth** | | | |
 | POST | `/api/auth/login` | Log in and receive JWT | None |
+| POST | `/api/auth/logout` | Revoke JWT | JWT (customer, manager, superadmin) |
 | **Cars** | | | |
 | GET | `/api/cars` | Query cars with pagination and filters | None |
 | POST | `/api/cars` | Create a car | JWT (superadmin, manager) |
@@ -79,23 +74,30 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
 ## Testing
 - **Unit Tests**: Located in `src/tests/*.test.ts`. Uses Jest and MongoDB Memory Server.
 - **Postman**: Import `postman_collection.json` for all APIs.
-- **Webhook Testing**: Use `ngrok http 3000` for `http://localhost:3000/api/purchases/webhook`.
+  - Set `baseUrl` to `http://localhost:<PORT>}`.
+  - Set `superadmin_password` to the `.env` `SUPERADMIN_PASSWORD`.
+- **Webhook Testing**: Use `ngrok http <PORT>` for `http://localhost:<PORT>/api/purchases/webhook`.
 
 ## Webhooks
 - **Purpose**: Handle Paystack events (`charge.success`, `charge.failed`).
 - **Setup**:
   1. Install ngrok:
      ```bash
-     ngrok http 3000
+     ngrok http <PORT>
      ```
-  2. Copy the ngrok URL (e.g., `https://abcd1234.ngrok.io`).
-  3. Set webhook URL in Paystack Dashboard: `https://<ngrok-id>.ngrok.io/api/purchases/webhook`.
+  2. Copy the ngrok URL.
+  3. Set webhook URL in Paystack Dashboard
   4. Enable `charge.success` and `charge.failed` events.
   5. Test via Paystack’s webhook simulator or Postman:
      - Use `POST /api/purchases/webhook` in `ventry_backend.postman_collection.json`.
-     - Compute `x-paystack-signature` with `PAYSTACK_SECRET_KEY` and payload.
+     - Compute `x-paystack-signature` with `PAYSTACK_SECRET_KEY` and payload:
+       ```javascript
+       const crypto = require('crypto');
+       const secret = process.env.PAYSTACK_SECRET_KEY;
+       const hash = crypto.createHmac('sha512', secret).update(JSON.stringify(payload)).digest('hex');
+       ```
 - **Test Case**: In `src/tests/purchase.test.ts` for `charge.success`.
 
-
-
-
+## Email Notifications
+- **Purchase Confirmation**: Sent via SendGrid after payment verification.
+- **OTP Emails**: Sent during customer signup.

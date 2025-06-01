@@ -8,7 +8,7 @@
         "name": "Auth",
         "item": [
           {
-            "name": "Login",
+            "name": "Login (Superadmin)",
             "request": {
               "method": "POST",
               "header": [
@@ -23,7 +23,27 @@
                 "host": ["{{baseUrl}}"],
                 "path": ["api", "auth", "login"]
               },
-              "description": "Log in and receive a JWT token."
+              "description": "Log in as superadmin and receive a JWT token."
+            },
+            "response": []
+          },
+          {
+            "name": "Login (User)",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{\"email\": \"user@example.com\", \"password\": \"password123\"}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/login",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "login"]
+              },
+              "description": "Log in as customer or manager and receive a JWT token."
             },
             "response": []
           },
@@ -44,7 +64,7 @@
                 "host": ["{{baseUrl}}"],
                 "path": ["api", "auth", "logout"]
               },
-              "description": "Revoke JWT token (customer, manager, superadmin)."
+              "description": "Log out and revoke the JWT token (customer, manager, superadmin)."
             },
             "response": []
           }
@@ -454,37 +474,14 @@
       }
     ],
     "variable": [
-      {
-        "key": "baseUrl",
-        "value": "http://localhost:3000"
-      },
-      {
-        "key": "jwt_token",
-        "value": ""
-      },
-      {
-        "key": "reference",
-        "value": ""
-      },
-      {
-        "key": "category_id",
-        "value": ""
-      },
-      {
-        "key": "car_id",
-        "value": ""
-      },
-      {
-        "key": "manager_id",
-        "value": ""
-      },
-      {
-        "key": "paystack_signature",
-        "value": ""
-      },
-      {
-        "key": "superadmin_password",
-        "value": "<your_superadmin_password>"
-      }
+      { "key": "baseUrl", "value": "http://localhost:8080" },
+      { "key": "jwt_token", "value": "" },
+      { "key": "reference", "value": "" },
+      { "key": "category_id", "value": "" },
+      { "key": "car_id", "value": "" },
+      { "key": "manager_id", "value": "" },
+      { "key": "paystack_signature", "value": "" },
+      { "key": "superadmin_password", "value": "<your_superadmin_password>" }
     ]
   }
+  
