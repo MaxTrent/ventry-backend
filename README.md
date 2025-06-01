@@ -71,7 +71,7 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
 ## Testing
 - **Unit Tests**: Located in `src/tests/*.test.ts`. Uses Jest and MongoDB Memory Server.
 - **Postman**: Import `postman_collection.json`.
-  - Set `baseUrl`
+  - Set `baseUrl` to `https://ventry-backend-jjs7.onrender.com`
   - Set `superadmin_password` to `.env` `SUPERADMIN_PASSWORD`.
   - Update `jwt_token`, `category_id`, `car_id`, `manager_id`, `reference`, `paystack_signature`.
 - **Webhook Testing**:
