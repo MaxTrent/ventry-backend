@@ -16,7 +16,7 @@
               ],
               "body": {
                 "mode": "raw",
-                "raw": "{\"email\": \"user@example.com\", \"password\": \"password123\"}"
+                "raw": "{\"email\": \"supadmin@ventry.com\", \"password\": \"{{superadmin_password}}\"}"
               },
               "url": {
                 "raw": "{{baseUrl}}/api/auth/login",
@@ -24,6 +24,27 @@
                 "path": ["api", "auth", "login"]
               },
               "description": "Log in and receive a JWT token."
+            },
+            "response": []
+          },
+          {
+            "name": "Logout",
+            "request": {
+              "method": "POST",
+              "header": [
+                { "key": "Content-Type", "value": "application/json" },
+                { "key": "Authorization", "value": "Bearer {{jwt_token}}" }
+              ],
+              "body": {
+                "mode": "raw",
+                "raw": "{}"
+              },
+              "url": {
+                "raw": "{{baseUrl}}/api/auth/logout",
+                "host": ["{{baseUrl}}"],
+                "path": ["api", "auth", "logout"]
+              },
+              "description": "Revoke JWT token (customer, manager, superadmin)."
             },
             "response": []
           }
@@ -435,7 +456,7 @@
     "variable": [
       {
         "key": "baseUrl",
-        "value": "http://localhost:8080"
+        "value": "http://localhost:3000"
       },
       {
         "key": "jwt_token",
@@ -460,6 +481,10 @@
       {
         "key": "paystack_signature",
         "value": ""
+      },
+      {
+        "key": "superadmin_password",
+        "value": "<your_superadmin_password>"
       }
     ]
   }
