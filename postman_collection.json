@@ -474,7 +474,7 @@
       }
     ],
     "variable": [
-      { "key": "baseUrl", "value": "http://localhost:8080" },
+      { "key": "baseUrl", "value": "https://ventry-backend-jjs7.onrender.com" },
       { "key": "jwt_token", "value": "" },
       { "key": "reference", "value": "" },
       { "key": "category_id", "value": "" },
