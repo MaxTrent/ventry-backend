@@ -29,11 +29,18 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
    ```bash
    npm run seed
    ```
-5. **Run Application**:
+5. **Run Locally (without Docker)**:
    ```bash
-   npm start
+   npm run dev
    ```
-6. **Run Tests**:
+6. **Run with Docker**:
+   - Install Docker
+   - Start Docker Desktop.
+   - Run:
+     ```bash
+     docker-compose up --build
+     ```
+7. **Run Tests**:
    ```bash
    npm test
    ```
@@ -93,17 +100,6 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
      - **Purchase Simulation**:
        - Use Postman to initiate a purchase and complete test payment.
        
-  5. **Run Locally (without Docker)**:
-   ```bash
-   npm run dev
-   ```
-  6. **Run with Docker**:
-   - Install Docker
-   - Start Docker Desktop.
-   - Run:
-     ```bash
-     docker-compose up --build
-     ```
 
 ## Email Notifications
 - **Purchase Confirmation**: Sent after payment verification.
