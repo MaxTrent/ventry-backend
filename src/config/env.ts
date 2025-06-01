@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import dotenv from 'dotenv';
-import logger from '../utils/logger';
 
 dotenv.config();
 
@@ -21,6 +20,9 @@ const envSchema = z.object({
 export default (function () {
   try {
     const parsed = envSchema.parse(process.env);
+    console.log(parsed);
+    console.log(process.env.SUPERADMIN_EMAIL);
+console.log(process.env.SUPERADMIN_PASSWORD);
     console.log('Environment variables validated successfully');
     // logger.info('Environment variables validated successfully');
     return parsed;

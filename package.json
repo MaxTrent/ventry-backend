@@ -6,7 +6,8 @@
     "start": "node dist/server.js",
     "build": "tsc",
     "dev": "nodemon src/server.ts",
-    "test": "NODE_ENV=test jest --runInBand --detectOpenHandles"
+    "test": "NODE_ENV=test jest --runInBand --detectOpenHandles",
+    "seed": "npx ts-node src/scripts/seed-superadmin.ts --force"
   },
   "keywords": [],
   "author": "",
@@ -14,10 +15,12 @@
   "description": "",
   "dependencies": {
     "@sendgrid/mail": "^8.1.5",
+    "@types/minimist": "^1.2.5",
     "bcrypt": "^6.0.0",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
+    "minimist": "^1.2.8",
     "mongoose": "^8.15.1",
     "paystack-sdk": "^2.5.19",
     "pino": "^9.7.0",

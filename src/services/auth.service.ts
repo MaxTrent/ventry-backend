@@ -38,3 +38,4 @@ export const login = async (data: { email: string; password: string }): Promise<
   logger.info({ email: validatedData.email, role: user.role }, 'Login successful');
   return { token, role: user.role };
 };
+
