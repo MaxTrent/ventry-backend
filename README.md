@@ -92,6 +92,18 @@ A Node.js/Express TypeScript application for a car dealership, managing cars, ca
   4. **Test Webhook**:
      - **Purchase Simulation**:
        - Use Postman to initiate a purchase and complete test payment.
+       
+  5. **Run Locally (without Docker)**:
+   ```bash
+   npm run dev
+   ```
+  6. **Run with Docker**:
+   - Install Docker
+   - Start Docker Desktop.
+   - Run:
+     ```bash
+     docker-compose up --build
+     ```
 
 ## Email Notifications
 - **Purchase Confirmation**: Sent after payment verification.
