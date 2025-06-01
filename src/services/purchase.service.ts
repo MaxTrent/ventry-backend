@@ -1,22 +1,32 @@
+
+import crypto from 'crypto';
+import config from '../config/env';
+import logger from '../utils/logger';
+import { Purchase } from '../models/purchase.model';
 import { Car } from '../models/car.model';
 import { Customer } from '../models/customer.model';
-import { Purchase } from '../models/purchase.model';
 import { IPurchase, CreatePurchaseInput } from '../types/purchase.types';
-import logger from '../utils/logger';
-import { z } from 'zod';
-import {Paystack} from 'paystack-sdk';
+import { Paystack } from 'paystack-sdk';
 import { v4 as uuidv4 } from 'uuid';
-import config from '../config/env';
 import { GetTransactionResponse } from 'paystack-sdk/dist/transaction/interface';
-import { sendPurchaseConfirmationEmail } from '../utils/email';
 import { BadRequest } from 'paystack-sdk/dist/interface';
-import crypto from "crypto";
+import { sendPurchaseConfirmationEmail } from '../utils/email';
+import { z } from 'zod';
 
 const paystack = new Paystack(config.PAYSTACK_SECRET_KEY);
 
 const purchaseSchema = z.object({
   carId: z.string().min(1, 'Car ID is required'),
   email: z.string().email('Valid email is required'),
+});
+
+const webhookPayloadSchema = z.object({
+  event: z.string().min(1, 'Event type is required'),
+  data: z.object({
+    reference: z.string().min(1, 'Reference is required'),
+    amount: z.number().optional(),
+    status: z.string().optional(),
+  }),
 });
 
 export const initiatePurchase = async (
@@ -44,7 +54,7 @@ export const initiatePurchase = async (
   }
 
   const reference = `ventry_${uuidv4()}`;
-  const amountInKobo = Math.round(car.price * 100); //Paystack uses kobo
+  const amountInKobo = Math.round(car.price * 100); // Paystack uses kobo
 
   try {
     const payment = await paystack.transaction.initialize({
@@ -71,7 +81,7 @@ export const initiatePurchase = async (
     logger.info({ purchaseId: purchase._id }, 'Purchase initiated');
     return { purchase, paymentUrl: payment.data.authorization_url };
   } catch (error: any) {
-    logger.error({ error: error.message }, 'Purchase initiation failed');
+    logger.error({ error: error.message, stack: error.stack }, 'Purchase initiation failed');
     throw new Error(`Purchase initiation failed: ${error.message}`);
   }
 };
@@ -87,7 +97,7 @@ export const handlePaymentCallback = async (reference: string): Promise<IPurchas
 
   try {
     const verification: BadRequest | GetTransactionResponse = await paystack.transaction.verify(reference);
-    
+
     if ('data' in verification && verification.data && verification.data.status === 'success' && verification.data.amount === purchase.amount * 100) {
       purchase.paymentStatus = 'completed';
       await Car.findByIdAndUpdate(purchase.carId, { isAvailable: false });
@@ -123,35 +133,39 @@ export const handlePaymentCallback = async (reference: string): Promise<IPurchas
       throw new Error('Payment verification failed');
     }
   } catch (error: any) {
-    logger.error({ error: error.message }, 'Verification failed');
+    logger.error({ error: error.message, stack: error.stack }, 'Verification failed');
     throw new Error(`Verification failed: ${error.message}`);
   }
 };
-export const handleWebhook = async (event: any, signature: string): Promise<void> => {
-    // Verify Paystack signature
+
+export const handleWebhook = async (payload: any, signature: string): Promise<void> => {
+  try {
     const hash = crypto
       .createHmac('sha512', config.PAYSTACK_SECRET_KEY)
-      .update(JSON.stringify(event))
+      .update(JSON.stringify(payload))
       .digest('hex');
     if (hash !== signature) {
-      logger.warn({ event }, 'Invalid webhook signature');
+      logger.warn({ signature, computed: hash }, 'Invalid webhook signature');
       throw new Error('Invalid webhook signature');
     }
-  
-    if (event.event === 'charge.success') {
-      const reference = event.data.reference;
-      const purchase = await Purchase.findOne({ paymentReference: reference });
+
+    
+    const validatedPayload = webhookPayloadSchema.parse(payload);
+    const { event, data } = validatedPayload;
+    logger.debug({ event, data }, 'Processing webhook');
+
+    if (event === 'charge.success') {
+      const purchase = await Purchase.findOne({ paymentReference: data.reference });
       if (!purchase) {
-        logger.warn({ reference }, 'Purchase not found in webhook');
+        logger.warn({ reference: data.reference }, 'Purchase not found in webhook');
         throw new Error('Purchase not found');
       }
-  
+
       if (purchase.paymentStatus !== 'completed') {
         purchase.paymentStatus = 'completed';
         await Car.findByIdAndUpdate(purchase.carId, { isAvailable: false });
         await purchase.save();
-  
-        // Send confirmation email
+
         const car = await Car.findById(purchase.carId).lean();
         const customer = await Customer.findById(purchase.customerId).lean();
         if (car && customer) {
@@ -169,16 +183,24 @@ export const handleWebhook = async (event: any, signature: string): Promise<void
             );
           }
         }
-  
+
         logger.info({ purchaseId: purchase._id }, 'Purchase completed via webhook');
       }
-    } else if (event.event === 'charge.failed') {
-      const reference = event.data.reference;
-      const purchase = await Purchase.findOne({ paymentReference: reference });
-      if (purchase) {
-        purchase.paymentStatus = 'failed';
-        await purchase.save();
-        logger.info({ purchaseId: purchase._id }, 'Purchase failed via webhook');
+    } else if (event === 'charge.failed') {
+      const purchase = await Purchase.findOne({ paymentReference: data.reference });
+      if (!purchase) {
+        logger.warn({ reference: data.reference }, 'Purchase not found in webhook');
+        throw new Error('Purchase not found');
       }
+
+      purchase.paymentStatus = 'failed';
+      await purchase.save();
+      logger.info({ purchaseId: purchase._id }, 'Purchase failed via webhook');
+    } else {
+      logger.warn({ event }, 'Unhandled webhook event');
     }
-  };
+  } catch (error: any) {
+    logger.error({ error: error.message, stack: error.stack }, 'Webhook processing error');
+    throw error;
+  }
+};

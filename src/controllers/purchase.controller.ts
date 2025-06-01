@@ -1,11 +1,8 @@
-
 import { Request, Response, NextFunction } from 'express';
 import { initiatePurchase, handlePaymentCallback, handleWebhook } from '../services/purchase.service';
 import { sendResponse } from '../utils/response';
 import logger from '../utils/logger';
-import { AuthRequest } from 'middleware/auth.middleware';
-
-
+import { AuthRequest } from '../middleware/auth.middleware';
 
 export const initiatePurchaseHandler = async (req: AuthRequest, res: Response, next: NextFunction): Promise<void> => {
   try {
@@ -43,11 +40,17 @@ export const handlePaymentCallbackHandler = async (req: Request, res: Response, 
 export const handleWebhookHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
   try {
     const signature = req.headers['x-paystack-signature'] as string;
+    if (!signature) {
+      logger.warn({ path: req.path }, 'Missing Paystack signature');
+      sendResponse(res, 400, null, 'Missing signature');
+      return;
+    }
     await handleWebhook(req.body, signature);
-    res.status(200).send('Webhook processed');
+    sendResponse(res, 200, null, 'Webhook processed');
   } catch (error: any) {
-    logger.error({ error: error.message }, 'Webhook processing failed');
-    res.status(400).send('Webhook processing failed');
+    logger.error({ error: error.message, stack: error.stack }, 'Webhook processing failed');
+    const status = error.message === 'Invalid signature' ? 400 : 500;
+    sendResponse(res, status, null, error.message || 'Webhook processing failed');
     next(error);
   }
 };
