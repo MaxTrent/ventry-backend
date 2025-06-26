@@ -1,4 +1,4 @@
-import { getCars, createCar, updateCar, deleteCar } from '../services/car.service';
+import {getCars, createCar, updateCar, deleteCar, uploadCarPhotos} from '../services/car.service';
 import { Car } from '../models/car.model';
 import { Category } from '../models/category.model';
 import { ICar, CarQuery, CreateCarInput } from '../types/car.types';
@@ -41,6 +41,7 @@ describe('Car Service', () => {
         fuelType: 'Petrol',
         transmission: 'Automatic',
         color: 'Blue',
+        photos: [],
         createdAt: new Date(),
         updatedAt: new Date(),
       },
@@ -83,7 +84,8 @@ describe('Car Service', () => {
       _id: uuidv4(),
       ...input,
       isAvailable: input.isAvailable ?? true, 
-      mileage: input.mileage ?? 0, 
+      mileage: input.mileage ?? 0,
+      photos: input.photos ?? [],
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -141,4 +143,28 @@ describe('Car Service', () => {
     expect(Car.findByIdAndDelete).toHaveBeenCalledWith(carId);
     logger.info('deleteCar unit test passed');
   });
+
+  it('should upload car photos', async () => {
+    const carId = uuidv4();
+    const files = [
+      { filename: 'photo1.jpg' },
+      { filename: 'photo2.jpg' }
+    ] as Express.Multer.File[];
+
+    const car = { _id: carId, photos: ['/uploads/cars/photo1.jpg', '/uploads/cars/photo2.jpg'] };
+
+    (Car.findByIdAndUpdate as jest.Mock).mockReturnValue({
+      lean: jest.fn().mockResolvedValue(car),
+    });
+
+    const result = await uploadCarPhotos(carId, files);
+
+    expect(Car.findByIdAndUpdate).toHaveBeenCalledWith(
+        carId,
+        { $push: { photos: { $each: ['/uploads/cars/photo1.jpg', '/uploads/cars/photo2.jpg'] } } },
+        { new: true }
+    );
+    expect(result).toEqual(car);
+  });
+
 });

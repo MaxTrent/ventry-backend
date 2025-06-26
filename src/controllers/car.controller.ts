@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { getCars, createCar, updateCar, deleteCar } from '../services/car.service';
+import {getCars, createCar, updateCar, deleteCar, uploadCarPhotos, deleteCarPhoto} from '../services/car.service';
 import { sendResponse } from '../utils/response';
 import { CarQuery, CreateCarInput } from '../types/car.types';
 import logger from '../utils/logger';
@@ -71,6 +71,35 @@ export const deleteCarHandler = async (req: Request, res: Response, next: NextFu
     sendResponse(res, 204, null);
   } catch (error) {
     logger.error({ error }, 'Error deleting car');
+    next(error);
+  }
+};
+
+export const uploadCarPhotosHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const files = req.files as Express.Multer.File[];
+
+    if (!files || files.length === 0) {
+      sendResponse(res, 400, null, 'No photos provided');
+      return;
+    }
+
+    const car = await uploadCarPhotos(id, files);
+    sendResponse(res, 200, car);
+  } catch (error) {
+    logger.error({ error }, 'Error uploading car photos');
+    next(error);
+  }
+};
+
+export const deleteCarPhotoHandler = async (req: Request, res: Response, next: NextFunction): Promise<void> => {
+  try {
+    const { id, photoUrl } = req.params;
+    const car = await deleteCarPhoto(id, photoUrl);
+    sendResponse(res, 200, car);
+  } catch (error) {
+    logger.error({ error }, 'Error deleting car photo');
     next(error);
   }
 };

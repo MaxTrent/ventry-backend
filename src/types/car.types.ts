@@ -10,6 +10,7 @@ export interface ICar {
     fuelType: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid';
     transmission: 'Automatic' | 'Manual';
     color: string;
+    photos: string[];
     createdAt: Date;
     updatedAt: Date;
   }
@@ -25,6 +26,7 @@ export interface ICar {
     fuelType: 'Petrol' | 'Diesel' | 'Electric' | 'Hybrid';
     transmission: 'Automatic' | 'Manual';
     color: string;
+    photos?: string[];
   }
   
   export interface CarQuery {

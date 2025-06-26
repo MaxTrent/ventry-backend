@@ -104,3 +104,23 @@ export const deleteCar = async (id: string): Promise<void> => {
   }
   logger.info({ carId: id }, 'Car deleted');
 };
+
+export const uploadCarPhotos = async (carId: string, files: Express.Multer.File[]): Promise<ICar> => {
+  const photoUrls = files.map(file => `/uploads/cars/${file.filename}`);
+  const car = await Car.findByIdAndUpdate(carId, { $push: { photos: { $each: photoUrls } } }, { new: true }).lean();
+
+  if (!car) throw new Error('Car not found');
+
+  logger.info({carId, photoCount: photoUrls.length}, 'Photos uploaded for car');
+return car;
+}
+
+
+export const deleteCarPhoto = async (carId: string, photoUrl: string): Promise<ICar> => {
+  const car = await Car.findByIdAndUpdate(carId, { $pull: { photos: photoUrl } }, { new: true }).lean();
+
+  if (!car) throw new Error('Car not found');
+
+  logger.info({carId, photoUrl}, 'Photo deleted for car');
+  return car;
+}

@@ -13,6 +13,11 @@ const carSchema = new Schema({
   fuelType: { type: String, enum: ['Petrol', 'Diesel', 'Electric', 'Hybrid'], required: true },
   transmission: { type: String, enum: ['Automatic', 'Manual'], required: true },
   color: { type: String, required: true, trim: true },
+  photos: [{ type: String, validate: {
+    function(value: string) {
+      return value.startsWith('http://') || value.startsWith('https://');
+    },
+    message: 'Invalid photo URL format'}}],
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });
